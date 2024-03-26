@@ -9,6 +9,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docs:
-    name:
-    uses: ./.github/workflows/docs.yml
+  trigger_docs:
+    runs-on: [self.hosted]
+    steps:
+      - name: Trigger docs workflow
+        uses: ./.github/workflows/docs.yml
+
