@@ -1,0 +1,81 @@
+name: 🧩 Documentation
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        required: false
+        default: "default"
+        description: runs-on target label.
+      python_version:
+        type: string
+        required: false
+        default: "3.11.5"
+        description: the python version to use.
+      docs_build_dir:
+        type: string
+        required: false
+        default: ".build/html"
+      ref:
+        type: string
+        required: false
+        default: ${{ github.ref }}
+        description: |
+          the github ref to use for the publishing. When using anything before the publish workflow
+          that pushes back changes to the underlying repo (like bumping the version) you have to ensure that
+          you use the correct revision (sha), branch or tag here. The default is the current ref.
+jobs:
+  docs:
+    name: build & publish
+    runs-on: ${{ inputs.target }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+
+    - name: Setup poetry
+      uses: ./.github/actions/setup-poetry
+      with:
+        python_version: ${{ inputs.python_version }}
+        install_dependencies_args: "--no-root --with ci"
+
+    - name: Build docs
+      run: |
+        poetry run poe docs
+    - name: Publish PR docs to pr-${{ github.event.number }}
+      uses: ./.github/actions/publish-docs
+      with:
+        github_token: ${{ github.token }}
+        publish_to_latest: false
+        version: pr-${{ github.event.number }}
+        build_dir: ${{ inputs.docs_build_dir }}
+      if: github.event_name == 'pull_request'
+
+    - name: Publish docs to '${{ github.ref_name }}'
+      uses: ./.github/actions/publish-docs
+      id: publish_branch
+      with:
+        github_token: ${{ github.token }}
+        publish_to_latest: true
+        version: ${{ github.ref_name }}
+        build_dir: ${{ inputs.docs_build_dir }}
+      if: github.event_name != 'pull_request'
+
+    - name: Publish docs to '${{ inputs.ref }}'
+      uses: ./.github/actions/publish-docs
+      id: publish_version
+      with:
+        github_token: ${{ github.token }}
+        publish_to_latest: false
+        version: ${{ inputs.ref }}
+        build_dir: ${{ inputs.docs_build_dir }}
+      if: github.event_name != 'pull_request' && inputs.ref != ''
+
+    - name: Write comment to PR about the generated docs
+      uses: ./.github/actions/comment-on-pull-request-docs-build
+      with:
+        pull_request_id: ${{ github.event.number }}
+        github_token: ${{ github.token }}
+      if: github.event_name == 'pull_request'
