@@ -34,6 +34,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.ref }}
+        token: ${{ secrets.TEST_TOKEN }}  # replace with your token if needed
 
     - name: Setup poetry
       uses: ./.github/actions/setup-poetry
