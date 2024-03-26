@@ -21,4 +21,3 @@ jobs:
           package-name: release
           bump-minor-pre-major: true
           bump-patch-for-minor-pre-major: true
-          changelog-host: https://github.boschdevcloud.com
