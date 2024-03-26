@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/eshwar00001/test123/compare/v0.1.1...v0.1.2) (2024-03-26)
+
+
+### Features
+
+* test ([930736d](https://github.com/eshwar00001/test123/commit/930736d6a1352fc7343a1d59a2e380c0327d7bef))
+
 ## [0.1.1](https://github.com/eshwar00001/test123/compare/v0.1.0...v0.1.1) (2024-03-26)
 
 
