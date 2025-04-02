@@ -1,0 +1,289 @@
+# ============================================================================================================
+# Poetry (project-, dependencies- + package-settings)
+# ============================================================================================================
+
+[tool.poetry]
+name = "{{ package_name }}"
+version = "0.0.1"  # do not change this version manually as this will break things! see CONTRIBUTE.md#conventional-commits
+description = "!YOUR DESCRIPTION HERE!"
+authors = ["{{ author }}"]
+maintainers = ["{{ author }}"]
+license = "{{ license }}"
+homepage = "{{ repo_url }}"
+repository = "{{ repo_url }}"
+documentation = "{{ repo_url }}"
+readme = "README.md"
+keywords = ["Python"]
+classifiers = []
+packages = [{ include = "{{ package_name }}" }]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.13"
+
+[tool.poetry.group.testing.dependencies]
+# vscode testing extensions requires pytest modules to be loadable in default virtualenv (.venv). Therefore
+# we unfortunately cannot install it in the devcontainer via pipx.
+pytest = "*"
+pytest-cov = "*"
+pytest-emoji = "*"
+pytest-md = "*"
+
+# ci build dependencies
+[tool.poetry.group.ci]
+optional = true
+[tool.poetry.group.ci.dependencies]
+pre-commit = "*"
+poethepoet = "*"
+commitizen = "*"
+
+{% if docs_type == "sphinx" -%}
+[tool.poetry.group.docs.dependencies]
+sphinx = "<7"
+pillow = "^10.0.1"
+myst-parser = "^2.0.0"
+sphinxcontrib-plantuml = "^0.26"
+sphinx-design = "^0.5.0"
+sphinx-toolbox = "^3.5.0"
+sphinx-autoapi = "^3.0.0"
+sphinx-copybutton = "^0.5.2"
+sphinx-book-theme = "^1.0.1"
+sphinx-rtd-theme = "^1.3.0"
+esbonio = "^0.16.1"
+sphinxcontrib-jquery = "^4.1"
+{%- endif %}
+
+[tool.poetry.scripts]
+{{ package_name }} = "{{ package_name }}.cli:cli"
+
+# add your (self-developed) scripts/cli tools here.
+# schema: <cli-call-name> = "<python_module>:<python_entry_function>"
+# e.g.:
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# ============================================================================================================
+# QA tool settings
+# ============================================================================================================
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.0.1"
+tag_format = "v$version"
+version_files = [
+    "pyproject.toml:^version",
+    "{{ package_name }}/__init__.py:^__version__",
+]
+bump_message = """chore(release): release $current_version → $new_version by commitizen [skip-ci]
+
+Signed-off-by: github-actions <actions@github.com>
+"""
+
+[tool.pytest.ini_options]
+log_level = "DEBUG"
+testpaths = ["tests"]
+junit_logging = "out-err"
+markers = ["speed: manual speed tests"]
+addopts = "-m 'not speed'"
+
+[tool.bandit]
+exclude_dirs = [
+    ".git",
+    ".build",
+    ".devcontainer",
+    ".github",
+    ".idea",
+    ".package",
+    ".pytest_cache",
+    "__pycache__",
+    ".venv",
+    ".vscode",
+    "dist",
+    "docs",
+    "tests",
+]
+
+[tool.bandit.assert_used]
+skips = ["*/test_*.py"]
+
+[tool.mypy]
+python_version = 3.8
+show_error_codes = true
+ignore_missing_imports = true
+
+# Ruff linter (black, flake8, pylint, bandit, isort replacement)
+[tool.ruff]
+
+# source dirs
+src = ["{{ package_name }}"]
+
+# set cache dir to our project's cache dir
+cache-dir = "~/.cache/ruff"
+
+# custom excludes in addition to files in .ignore, .gitignore, .git/info/exclude, and global gitignore
+extend-exclude = [
+    ".build",
+    ".github",
+    ".idea",
+    ".package",
+    "pytest_cache",
+    ".vscode",
+    "dist",
+    "docs",
+    "tests",
+]
+
+line-length = 120
+
+target-version = "py38"
+
+[tool.ruff.lint]
+
+# Note on these rules:
+# We created a set which we consider a good default for our projects. Some of these rules aren't valid in all cases.
+# If you encounter such a false positive please try to suppress the rule by using a `# noqa: <rule>` comment.
+# The next best thing you can do is add the rules you don't like to the the `ignore` list.
+# And last but not least you can remove complete rulesets by removing them from the `select` list.
+select = [
+    "D",
+    "C",
+    "I",
+    "N",
+    "E",
+    "F",
+    "G",
+    "W",
+    "B",
+    "UP",
+    "S",
+    "ASYNC",
+    "BLE",
+    "FBT",
+    "PIE",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "ARG",
+    "PTH",
+    "PL",
+    "RUF"
+] # maybe just use ALL here??
+
+# ignore some rules
+ignore = ["D301", "D213", "D212", "D203", "E203", "E501", "G004", "PLC1901"]
+
+# allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "I",
+    "N",
+    "Q",
+    "S",
+    "T",
+    "W",
+    "ANN",
+    "ARG",
+    "BLE",
+    "COM",
+    "DJ",
+    "DTZ",
+    "EM",
+    "ERA",
+    "EXE",
+    "FBT",
+    "ICN",
+    "INP",
+    "ISC",
+    "NPY",
+    "PD",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PTH",
+    "PYI",
+    "RET",
+    "RSE",
+    "RUF",
+    "SIM",
+    "SLF",
+    "TCH",
+    "TID",
+    "TRY",
+    "UP",
+    "YTT",
+    "COM",
+    "C4",
+    "DTZ",
+    "EM",
+]
+
+unfixable = []
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**" = ["D", "S101", "INP001"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 120
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.ruff.lint.pylint]
+max-args = 9
+
+# ============================================================================================================
+# Poe the poet (Shell Tasks - like makefiles but nicer and in python)
+# ============================================================================================================
+
+{% if docs_type == "sphinx" -%}
+[tool.poe.tasks.docs]
+help = "generate the documentation html to .build/ directory"
+cmd = "sphinx-build -M html . .build --keep-going -W"
+
+[tool.poe.tasks.serve]
+help = "serves the docs in a server"
+cmd = "python -m http.server -d .build/html"
+{%- endif %}
+
+[tool.poe.tasks.build]
+help = "build package into dist/ directory"
+cmd = "poetry build"
+
+[tool.poe.tasks.clean]
+help = "cleans the .build and dist directories"
+shell = """
+python -c "import shutil; shutil.rmtree('.build', ignore_errors=True); shutil.rmtree('dist/', ignore_errors=True); shutil.rmtree('docs/auto_api', ignore_errors=True);"
+"""
+
+[tool.poe.tasks.lint]
+help = "runs all linting/qa tasks over all files in the repository (don't forget to git-add them)"
+cmd = "pre-commit run --all-files"
+
+[tool.poe.tasks.lint_ci]
+help = "runs linting/qa tasks that are executed during ci"
+shell = "SKIP=poetry-lock,auto-patch-header pre-commit run --all-files"
+
+[tool.poe.tasks.test]
+help = "runs all pytest unit-tests"
+cmd = "pytest"
+
+[tool.poe.tasks.cover]
+help = "runs all pytest unit-tests with coverage"
+cmd = "pytest --cov"
+
+[tool.poe.tasks.header]
+help = "adds SPDX license and copyright info to all files that have changes."
